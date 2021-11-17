@@ -1,13 +1,14 @@
 package dietbot.domain.actions
 
+import dietbot.domain.commands.Commands
 import dietbot.googlesheets.TableService
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-class CreateNewDateAction(
+class CreateNewDateHandler(
     val tableService: TableService
-): Action {
-    override fun execute(): ActionResult {
+): Handler {
+    override fun on(command: Commands): HandlerResult {
         val currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
         val dates = tableService.findCellsInRange("E10:Z10")
 
@@ -18,6 +19,6 @@ class CreateNewDateAction(
             tableService.writeRange("E10:Z10", mutableListOf(newList))
         }
 
-        return ActionResult.Success("We got a result")
+        return HandlerResult.Success("We got a result")
     }
 }
