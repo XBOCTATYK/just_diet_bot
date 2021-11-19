@@ -5,10 +5,12 @@ import dietbot.domain.actions.HandlerResult
 import dietbot.domain.commands.Commands
 import java.util.stream.Collectors
 
+data class Subscription(val name: String, val handler: (results: List<HandlerResult>) -> Any)
+
 class CommandWorker(
     private val handlerList: List<Handler>
 ) {
-    private val subscribers: MutableList<(results: List<HandlerResult>) -> Any> = mutableListOf()
+    private val subscribers: MutableSet<Subscription> = mutableSetOf()
 
     fun dispatch(command: Commands): HandlerResult {
         val performResults = handlerList
@@ -17,8 +19,14 @@ class CommandWorker(
             .collect(Collectors.toList())
 
         subscribers.parallelStream()
-            .forEach { it(performResults) }
+            .forEach { it.handler(performResults) }
 
+        dispatchFromResult(performResults)
+
+        return HandlerResult.Success("")
+    }
+
+    fun dispatchFromResult(performResults: List<HandlerResult>): HandlerResult {
         performResults.map {
             if (it is HandlerResult.Command)
                 dispatch(it.command)
@@ -29,8 +37,12 @@ class CommandWorker(
         return HandlerResult.Success("")
     }
 
-    fun subscribe(supplier: (results: List<HandlerResult>) -> Any) {
-        subscribers.add(supplier)
+    fun subscribe(name: String, supplier: (results: List<HandlerResult>) -> Any) {
+        subscribers.add(Subscription(name, supplier))
+    }
+
+    fun unsubscribe(name: String) {
+        subscribers.removeIf { it.name == name }
     }
 
     class Builder {

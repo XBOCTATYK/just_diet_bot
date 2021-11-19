@@ -11,11 +11,11 @@ data class CredentialsConfig(
     )
 
 class CredentialsService {
-    private val BASE_DIR = System.getProperty("user.dir") + "/src/main"
+    private val baseDir = System.getProperty("user.dir") + "/src/main"
     var config: CredentialsConfig
 
     init {
-        val credentialFile = FileInputStream(BASE_DIR + "/resources/bot_credentials.json")
+        val credentialFile = FileInputStream("$baseDir/resources/bot_credentials.json")
         val text = InputStreamReader(credentialFile).readText()
 
         this.config = Gson().fromJson(text, CredentialsConfig::class.java)

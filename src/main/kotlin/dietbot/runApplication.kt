@@ -29,6 +29,8 @@ fun main() {
     )
 
     val tableService = TableService(credentialsService.config.spreadsheetId, "new_format")
+    val commandWorker = initCommandWorker(tableService)
+    val stateChangeWorker = initStateCommandWorker(appState)
 
     val bot = bot {
         token = credentialsService.config.token
@@ -56,11 +58,21 @@ fun main() {
             }
             message(Filter.Custom { appState.isState(StateList.INITIAL) } and Filter.Text and Filter.User(myChatId)) {
                 val text = message.text
-                val commandWorker = initCommandWorker(tableService, bot, message)
                 val startCommand = AnalyzerFactory.matchAndCreate(text).produceCommand()
+                val telegramWorker = initTelegramCommandWorker(bot, message)
 
-                commandWorker.subscribe { it -> it.map { println(it.toString()) } }
+                commandWorker.subscribe("out") { it -> it.map { println(it.toString()) } }
+                commandWorker.subscribe("telegram_worker") {
+                    telegramWorker.dispatchFromResult(it)
+                    stateChangeWorker.dispatchFromResult(it)
+                }
+
+                telegramWorker.dispatch(startCommand)
+                stateChangeWorker.dispatch(startCommand)
+
                 val results = commandWorker.dispatch(startCommand)
+
+                commandWorker.unsubscribe("telegram_worker")
 
                 println("uu")
             }
