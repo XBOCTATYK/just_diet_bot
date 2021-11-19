@@ -8,6 +8,7 @@ sealed class HandlerResult {
     data class Success(override val message: String?): HandlerResult()
     data class Command(override val command: Commands): HandlerResult()
     data class Error(override val message: String): HandlerResult()
+    data class Empty(override val message: String? = "name"): HandlerResult()
 }
 
 interface Handler {

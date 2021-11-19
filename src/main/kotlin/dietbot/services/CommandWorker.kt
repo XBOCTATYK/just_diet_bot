@@ -32,4 +32,19 @@ class CommandWorker(
     fun subscribe(supplier: (results: List<HandlerResult>) -> Any) {
         subscribers.add(supplier)
     }
+
+    class Builder {
+        private val list = mutableListOf<Handler>()
+
+        public fun addHandler(handler: Handler): CommandWorker.Builder {
+            list.add(handler)
+
+            return this
+        }
+
+        public fun build(handlerList: List<Handler>): CommandWorker {
+            list.addAll(handlerList)
+            return CommandWorker(handlerList)
+        }
+    }
 }

@@ -6,9 +6,16 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 class CreateNewDateHandler(
-    val tableService: TableService
+    private val tableService: TableService
 ): Handler {
     override fun on(command: Commands): HandlerResult {
+        return when (command) {
+            is Commands.CreateNextDate -> createNewDate()
+            else -> HandlerResult.Empty()
+        }
+    }
+
+    private fun createNewDate(): HandlerResult {
         val currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
         val dates = tableService.findCellsInRange("E10:Z10")
 
